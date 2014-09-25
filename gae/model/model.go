@@ -3,7 +3,7 @@ package model
 import (
 	"appengine"
 	"appengine/datastore"
-	"base/errors"
+	"github.com/knightso/base/errors"
 	"github.com/qedus/nds"
 	"reflect"
 	"time"
