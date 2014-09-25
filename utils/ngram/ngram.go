@@ -10,7 +10,7 @@ type Bigram struct {
 }
 
 func (bigram *Bigram) String() string {
-	return fmt.Sprintf("%s%s", bigram.a, bigram.b)
+	return fmt.Sprintf("%c%c", bigram.a, bigram.b)
 }
 
 func ToBigrams(value string) map[Bigram]struct{} {

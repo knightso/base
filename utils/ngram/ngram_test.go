@@ -20,6 +20,13 @@ func TestToBigrams(t *testing.T) {
 	assertBigram(t, result, Bigram{'e', 'n'})
 }
 
+func TestString(t *testing.T) {
+	b := Bigram{'a', 'あ'}
+	if b.String() != "aあ" {
+		t.Errorf("exected:%s, but was:%s\n", "aあ", b.String())
+	}
+}
+
 func assertBigram(t *testing.T, set map[Bigram]struct{}, bigram Bigram) {
 	if _, ok := set[bigram]; !ok {
 		t.Errorf("Bigram notfound. %v\n", bigram)
