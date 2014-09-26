@@ -278,6 +278,11 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 		var oldIndex GenericIndex
 		if err := nds.Get(c, oldIdxKey, &oldIndex); err != nil {
 			return errors.WrapOr(err)
+		} else {
+			//remove old index.
+			if err := nds.Delete(c, oldIdxKey); err != nil {
+				return errors.WrapOr(err)
+			}
 		}
 		if !oldIndex.Key.Equal(key) {
 			return errors.New("data conflict error")
