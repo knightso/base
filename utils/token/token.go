@@ -3,7 +3,7 @@ package token
 import (
 	"bytes"
 	"math"
-	"unicode/utf8"
+	"strings"
 )
 
 const BASE62CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -23,19 +23,34 @@ func (c *config) Encode(v int64) string {
 	return c.toBase62(c.applyMasks(v))
 }
 
-func (c *config) Decode(s string) int64 {
-	return 0
+func (c *config) Decode(token string) int64 {
+	return c.applyMasks(c.toInt64(token))
 }
 
 // TODO:concern negative and zero
 func (c *config) toBase62(v int64) string {
 	var buf bytes.Buffer
 	for v > 0 {
-		r, _ := utf8.DecodeRune([]byte(BASE62CHARS)[v%62:])
-		buf.WriteRune(r)
+		buf.WriteByte(BASE62CHARS[v%62])
 		v /= 62
 	}
 	return buf.String()
+}
+
+func (c *config) toInt64(token string) int64 {
+	var value int64
+	for i := len(token) - 1; i >= 0; i-- {
+		value += int64(strings.IndexByte(BASE62CHARS, token[i])) * c.pow62(i)
+	}
+	return value
+}
+
+func (c *config) pow62(k int) int64 {
+	value := int64(1)
+	for i := 0; i < k; i++ {
+		value *= 62
+	}
+	return value
 }
 
 func (c *config) applyMasks(v int64) int64 {

@@ -26,11 +26,24 @@ func TestNew(t *testing.T) {
 		4324745483838182873,
 	}, 2610529275472644968)
 
-	c, _ := der.(*config)
-	fmt.Printf("%x\n", uint64(c.maskToMask))
+	assertToken(t, der, 1, "3DTo3UjhU29")
+	assertToken(t, der, 2, "mmK8MTuTyV7")
+	assertToken(t, der, 3, "JVYJWN0CLt1")
+	assertToken(t, der, 4, "gGAzJCrdnI9")
+	assertToken(t, der, 5, "tESoSWuf2b5")
+	assertToken(t, der, 10000000, "ICgQmf4I6D9")
+	assertToken(t, der, 20000000, "CjC3idfp6e4")
+	assertToken(t, der, 30000000, "eriiRP54Ne1")
+}
 
-	for i := 1; i < 100; i++ {
-		fmt.Printf("%d:%d\n", i, der.Encode(int64(i)))
+func assertToken(t *testing.T, der EncodeDecoder, n int64, token string) {
+	encoded := der.Encode(n)
+	if encoded != token {
+		t.Errorf("Encode error. expected:%s, but was:%s", token, encoded)
+	}
+	decoded := der.Decode(encoded)
+	if decoded != n {
+		t.Errorf("Decode error. expected:%d, but was:%d", n, decoded)
 	}
 }
 
