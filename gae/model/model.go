@@ -291,3 +291,11 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 
 	return nil
 }
+
+func RemoveKeyFromIndex(c appengine.Context, key *datastore.Key, id string) error {
+	idxKey := datastore.NewKey(c, key.Kind()+INDEX_PREFIX, id, 0, nil)
+	if err := nds.Delete(c, idxKey); err != nil {
+		return errors.WrapOr(err)
+	}
+	return nil
+}
