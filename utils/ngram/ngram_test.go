@@ -27,8 +27,8 @@ func TestString(t *testing.T) {
 	}
 }
 
-func assertBigram(t *testing.T, set map[Bigram]struct{}, bigram Bigram) {
-	if _, ok := set[bigram]; !ok {
+func assertBigram(t *testing.T, set map[Bigram]bool, bigram Bigram) {
+	if !set[bigram] {
 		t.Errorf("Bigram notfound. %v\n", bigram)
 	}
 }

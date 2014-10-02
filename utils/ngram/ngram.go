@@ -13,12 +13,12 @@ func (bigram *Bigram) String() string {
 	return fmt.Sprintf("%c%c", bigram.a, bigram.b)
 }
 
-func ToBigrams(value string) map[Bigram]struct{} {
-	result := make(map[Bigram]struct{})
+func ToBigrams(value string) map[Bigram]bool {
+	result := make(map[Bigram]bool)
 	var prev rune
 	for i, r := range strings.ToLower(value) {
 		if i > 0 && prev != ' ' && r != ' ' {
-			result[Bigram{prev, r}] = struct{}{}
+			result[Bigram{prev, r}] = true
 		}
 		prev = r
 	}
