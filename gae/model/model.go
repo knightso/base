@@ -148,12 +148,18 @@ func GetMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 		}
 	}
 
-	return forEach(dst, func(index int, elem interface{}) error {
+	forEach(dst, func(index int, elem interface{}) error {
 		if hk, ok := elem.(HasKey); ok {
 			hk.SetKey(keys[index])
 		}
 		return nil
 	})
+
+	if err != nil {
+		return errors.WrapOr(err)
+	}
+
+	return nil
 }
 
 func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []int, dst interface{}) error {
@@ -178,6 +184,12 @@ func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []
 		}
 		return nil
 	})
+
+	if err != nil {
+		return errors.WrapOr(err)
+	}
+
+	return nil
 }
 
 // TODO: consider interface (how do you treat key?)
@@ -200,12 +212,18 @@ func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 		}
 	}
 
-	return forEach(dst, func(index int, elem interface{}) error {
+	forEach(dst, func(index int, elem interface{}) error {
 		if hk, ok := elem.(HasKey); ok {
 			hk.SetKey(keysput[index])
 		}
 		return nil
 	})
+
+	if err != nil {
+		return errors.WrapOr(err)
+	}
+
+	return nil
 }
 
 func forEach(list interface{}, f func(index int, elem interface{}) error) error {
