@@ -6,11 +6,11 @@ import (
 )
 
 type Bigram struct {
-	a, b rune
+	A, B rune
 }
 
 func (bigram *Bigram) String() string {
-	return fmt.Sprintf("%c%c", bigram.a, bigram.b)
+	return fmt.Sprintf("%c%c", bigram.A, bigram.B)
 }
 
 func ToBigrams(value string) map[Bigram]bool {
