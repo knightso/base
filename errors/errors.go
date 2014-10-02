@@ -88,6 +88,17 @@ func Root(e error) error {
 	}
 }
 
+type MultiError []error
+
+func (me MultiError) Error() string {
+	var buf bytes.Buffer
+	for _, err := range me {
+		buf.WriteString(err.Error())
+		buf.WriteString("\n")
+	}
+	return buf.String()
+}
+
 func StackTrace(skip, maxBytes int) string {
 	// this func is debug purpose and ignores errors
 
