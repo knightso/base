@@ -88,6 +88,23 @@ func Root(e error) error {
 	}
 }
 
+func Find(e error, f func(e error) bool) error {
+	for {
+		if f(e) {
+			return e
+		}
+		err, ok := e.(Error)
+		if !ok {
+			return nil
+		}
+		cause := err.Cause()
+		if cause == nil {
+			return nil
+		}
+		e = cause
+	}
+}
+
 type MultiError []error
 
 func (me MultiError) Error() string {

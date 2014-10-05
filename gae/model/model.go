@@ -4,14 +4,13 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"github.com/knightso/base/errors"
+	goerrors "errors"
 	"github.com/qedus/nds"
 	"reflect"
 	"time"
 )
 
-type OptimisticLockError struct {
-	*errors.BaseError
-}
+var OptimisticLockError = goerrors.New("Optimistic lock failure.")
 
 type AlreadyIndexedError struct {
 	*errors.BaseError
@@ -111,9 +110,7 @@ func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst in
 
 	if hv, ok := dst.(HasVersion); ok {
 		if hv.GetVersion() != version {
-			return OptimisticLockError{
-				errors.New("optimistic lock failure. somebody may have updated it."),
-			}
+			return OptimisticLockError
 		}
 	}
 
@@ -177,9 +174,7 @@ func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []
 		}
 		if hv, ok := elem.(HasVersion); ok {
 			if hv.GetVersion() != versions[index] {
-				return OptimisticLockError{
-					errors.New("optimistic lock failure. somebody may have updated it."),
-				}
+				return OptimisticLockError
 			}
 		}
 		return nil
