@@ -17,7 +17,12 @@ type ExMartini struct {
 	martini.Router
 }
 
-func NewMartini(additionalHandlers ...martini.Handler) *ExMartini {
+type MartiniOption struct {
+	AdditionalHandlers []martini.Handler
+	Log2bq bool
+}
+
+func NewMartini(option MartiniOption) *ExMartini {
 	r := martini.NewRouter()
 	m := martini.New()
 
@@ -36,7 +41,7 @@ func NewMartini(additionalHandlers ...martini.Handler) *ExMartini {
 	m.Use(martini.Logger())
 	m.Use(martini.Recovery())
 	m.Use(render.Renderer())
-	for _, h := range additionalHandlers {
+	for _, h := range option.AdditionalHandlers {
 		m.Use(h)
 	}
 	m.MapTo(r, (*martini.Route)(nil))
