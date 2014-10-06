@@ -1,15 +1,21 @@
 package gae
 
 import (
-	"appengine"
+	"encoding/json"
 	"fmt"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
 	"log"
 	"net/http"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
+
+	"appengine"
+	"appengine/taskqueue"
+	"code.google.com/p/go-uuid/uuid"
+	"github.com/go-martini/martini"
+	"github.com/knightso/base/gae/bq"
+	"github.com/martini-contrib/render"
 )
 
 type ExMartini struct {
@@ -19,7 +25,7 @@ type ExMartini struct {
 
 type MartiniOption struct {
 	AdditionalHandlers []martini.Handler
-	Log2bq bool
+	Log2bq             bool
 }
 
 func NewMartini(option MartiniOption) *ExMartini {
@@ -35,6 +41,33 @@ func NewMartini(option MartiniOption) *ExMartini {
 		ac := appengine.NewContext(r)
 		c.Next()
 		for l := popLog(); l != ""; l = popLog() {
+			id := uuid.NewUUID()
+			uuidString := id.String()
+			now := time.Now()
+			task := bq.Task{
+				"DebugLog",
+				uuidString,
+				now,
+				map[string]interface{}{
+					"id":   uuidString,
+					"date": now,
+					"log":  l,
+				},
+			}
+			payload, err := json.Marshal(task)
+			if err != nil {
+				ac.Warningf("%s", err.Error())
+				continue
+			}
+			_, err = taskqueue.Add(ac, &taskqueue.Task{
+				Payload: payload,
+				Method:  "PULL",
+			}, "log2bigquery")
+			if err != nil {
+				ac.Warningf("%s", err.Error())
+				continue
+			}
+
 			ac.Debugf(l)
 		}
 	})
