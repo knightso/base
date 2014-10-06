@@ -41,6 +41,11 @@ func NewMartini(option MartiniOption) *ExMartini {
 		ac := appengine.NewContext(r)
 		c.Next()
 		for l := popLog(); l != ""; l = popLog() {
+			if option.Log2bq == false {
+				ac.Debugf(l)
+				continue
+			}
+
 			id := uuid.NewUUID()
 			uuidString := id.String()
 			now := time.Now()
