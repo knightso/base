@@ -8,10 +8,10 @@ import (
 
 const (
 	hstart rune = 'ぁ'
-	hend rune = 'ん'
+	hend   rune = 'ん'
 	kstart rune = 'ァ'
-	kend rune = 'ン'
-	gap = kstart - hstart
+	kend   rune = 'ン'
+	gap         = kstart - hstart
 )
 
 func Hiragana2Katakana(h string) string {
