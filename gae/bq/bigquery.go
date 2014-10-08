@@ -7,6 +7,6 @@ import (
 type Task struct {
 	LogID    string
 	InsertID string
-	Date     time.Time
+	Time     time.Time
 	Record   interface{}
 }
