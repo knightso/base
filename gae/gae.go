@@ -49,15 +49,15 @@ func NewMartini(option MartiniOption) *ExMartini {
 			id := uuid.NewUUID()
 			uuidString := id.String()
 			now := time.Now()
+			record := make(map[string]interface{})
+			record["id"] = uuidString
+			record["date"] = now
+			record["log"] = l
 			task := bq.Task{
-				"DebugLog",
-				uuidString,
-				now,
-				map[string]interface{}{
-					"id":   uuidString,
-					"date": now,
-					"log":  l,
-				},
+				LogID:    "DebugLog",
+				InsertID: uuidString,
+				Time:     now,
+				Record:   record,
 			}
 			payload, err := json.Marshal(task)
 			if err != nil {
