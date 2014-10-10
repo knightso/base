@@ -5,32 +5,38 @@ import (
 	"sync"
 )
 
+// TODO: now using encoded string as map key. Is it ok??
 type SyncMap struct {
 	sync.RWMutex
-	M map[datastore.Key]interface{}
+	M map[string]interface{}
 }
 
 func NewSyncMap() *SyncMap {
-	return &SyncMap{M: make(map[datastore.Key]interface{})}
+	return &SyncMap{M: make(map[string]interface{})}
 }
 
 func (s *SyncMap) Get(k *datastore.Key) (interface{}, bool) {
 	s.RLock()
-	r, ok := s.M[*k]
+	r, ok := s.M[k.Encode()]
 	s.RUnlock()
 	return r, ok
 }
 
 func (s *SyncMap) Put(k *datastore.Key, v interface{}) {
 	s.Lock()
-	s.M[*k] = v
+	s.M[k.Encode()] = v
 	s.Unlock()
 }
 
-func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{})) {
+func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{})) error {
 	s.RLock()
 	defer s.RUnlock()
 	for k, v := range s.M {
-		f(&k, v)
+		key, err := datastore.DecodeKey(k)
+		if err != nil {
+			return err
+		}
+		f(key, v)
 	}
+	return nil
 }

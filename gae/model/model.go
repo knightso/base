@@ -34,7 +34,7 @@ type HasVersion interface {
 
 type Meta struct {
 	Key       *datastore.Key `datastore:"-" json:"-"`
-	Version   int            `json:"version"`
+	Version   int            `datastore:",noindex" json:"version"`
 	Deleted   bool           `json:"deleted"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
