@@ -67,6 +67,7 @@ func NewMartini(option MartiniOption) *ExMartini {
 			_, err = taskqueue.Add(ac, &taskqueue.Task{
 				Payload: payload,
 				Method:  "PULL",
+				Tag:     "debuglog",
 			}, "log2bigquery")
 			if err != nil {
 				ac.Warningf("%s", err.Error())
