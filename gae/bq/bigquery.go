@@ -10,6 +10,8 @@ import (
 	"github.com/knightso/base/errors"
 )
 
+var EnableLog bool = false // debugging variable.
+
 type Task struct {
 	LogID    string
 	InsertID string
@@ -17,12 +19,16 @@ type Task struct {
 	Record   interface{}
 }
 
-func PullReport(c appengine.Context, logID, insertID string, jsonReport interface{}) error {
+func SendLog(c appengine.Context, logID, insertID string, record interface{}) error {
+	if EnableLog == false {
+		return nil
+	}
+
 	v := Task{
 		LogID:    logID,
 		InsertID: insertID,
 		Time:     time.Now(),
-		Record:   jsonReport,
+		Record:   record,
 	}
 
 	payload, err := json.Marshal(v)
