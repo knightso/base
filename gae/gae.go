@@ -1,7 +1,6 @@
 package gae
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,7 +10,7 @@ import (
 	"time"
 
 	"appengine"
-	"appengine/taskqueue"
+
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/go-martini/martini"
 	"github.com/knightso/base/gae/bq"
