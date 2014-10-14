@@ -53,22 +53,8 @@ func NewMartini(option MartiniOption) *ExMartini {
 			record["id"] = uuidString
 			record["date"] = now
 			record["log"] = l
-			task := bq.Task{
-				LogID:    "DebugLog",
-				InsertID: uuidString,
-				Time:     now,
-				Record:   record,
-			}
-			payload, err := json.Marshal(task)
-			if err != nil {
-				ac.Warningf("%s", err.Error())
-				continue
-			}
-			_, err = taskqueue.Add(ac, &taskqueue.Task{
-				Payload: payload,
-				Method:  "PULL",
-				Tag:     "debuglog",
-			}, "log2bigquery")
+
+			err := bq.SendLog(ac, "debuglog", uuidString, record)
 			if err != nil {
 				ac.Warningf("%s", err.Error())
 				continue
