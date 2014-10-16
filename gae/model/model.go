@@ -11,10 +11,7 @@ import (
 )
 
 var OptimisticLockError = goerrors.New("Optimistic lock failure.")
-
-type AlreadyIndexedError struct {
-	*errors.BaseError
-}
+var UniqueConstraintError = goerrors.New("Already exists.")
 
 type HasKey interface {
 	GetKey() *datastore.Key
@@ -110,7 +107,7 @@ func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst in
 
 	if hv, ok := dst.(HasVersion); ok {
 		if hv.GetVersion() != version {
-			return OptimisticLockError
+			return errors.WrapOr(OptimisticLockError)
 		}
 	}
 
@@ -174,7 +171,7 @@ func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []
 		}
 		if hv, ok := elem.(HasVersion); ok {
 			if hv.GetVersion() != versions[index] {
-				return OptimisticLockError
+				return errors.WrapOr(OptimisticLockError)
 			}
 		}
 		return nil
@@ -274,9 +271,7 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 	var index GenericIndex
 	err := nds.Get(c, idxKey, &index)
 	if err == nil {
-		return AlreadyIndexedError{
-			errors.New("ID already exists."),
-		}
+		return errors.WrapOr(UniqueConstraintError)
 	} else if err != datastore.ErrNoSuchEntity {
 		return errors.WrapOr(err)
 	}
