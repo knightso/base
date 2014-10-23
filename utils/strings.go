@@ -15,7 +15,7 @@ const (
 )
 
 func Hiragana2Katakana(h string) string {
-	var buf bytes.Buffer
+	buf := bytes.NewBuffer(make([]byte, 0, len(h)))
 	for _, r := range h {
 		if r >= hstart && r <= hend {
 			buf.WriteRune(r + gap)
@@ -27,7 +27,7 @@ func Hiragana2Katakana(h string) string {
 }
 
 func Katakana2Hiragana(k string) string {
-	var buf bytes.Buffer
+	buf := bytes.NewBuffer(make([]byte, 0, len(k)))
 	for _, r := range k {
 		if r >= kstart && r <= kend {
 			buf.WriteRune(r - gap)
