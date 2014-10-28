@@ -52,7 +52,7 @@ func (e *BaseError) Error() string {
 	buf.WriteString("\n")
 	buf.WriteString(e.stackTrace)
 	if e.cause != nil {
-		buf.WriteString("  caused by\n")
+		buf.WriteString("  caused by \n")
 		buf.WriteString(e.cause.Error())
 		buf.WriteString("\n")
 	}
