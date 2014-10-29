@@ -13,6 +13,7 @@ type Error interface {
 	StackTrace() string
 	Cause() error
 	Error() string
+	ErrorWithStackTrace() string
 }
 
 type BaseError struct {
@@ -47,6 +48,16 @@ func (e *BaseError) Cause() error {
 }
 
 func (e *BaseError) Error() string {
+	if e.message != "" {
+		return e.message
+	} else if e.cause != nil {
+		return e.cause.Error()
+	} else {
+		return "no error message"
+	}
+}
+
+func (e *BaseError) ErrorWithStackTrace() string {
 	var buf bytes.Buffer
 	buf.WriteString(e.message)
 	buf.WriteString("\n")
