@@ -127,6 +127,10 @@ func (me MultiError) Error() string {
 	return buf.String()
 }
 
+func (me MultiError) HasAdditional() interface{} {
+	return me
+}
+
 func StackTrace(skip, maxBytes int) string {
 	// this func is debug purpose and ignores errors
 
