@@ -28,7 +28,7 @@ func (s *SyncMap) Put(k *datastore.Key, v interface{}) {
 	s.Unlock()
 }
 
-func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{})) error {
+func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{}) error) error {
 	s.RLock()
 	defer s.RUnlock()
 	for k, v := range s.M {
@@ -36,7 +36,9 @@ func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{})) error {
 		if err != nil {
 			return err
 		}
-		f(key, v)
+		if err := f(key, v); err != nil {
+			return err
+		}
 	}
 	return nil
 }
