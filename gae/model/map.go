@@ -28,6 +28,12 @@ func (s *SyncMap) Put(k *datastore.Key, v interface{}) {
 	s.Unlock()
 }
 
+func (s *SyncMap) Delete(k *datastore.Key) {
+	s.RLock()
+	delete(s.M, k.Encode())
+	s.RUnlock()
+}
+
 func (s *SyncMap) ForEach(f func(k *datastore.Key, v interface{}) error) error {
 	s.RLock()
 	defer s.RUnlock()
