@@ -3,9 +3,12 @@ package model
 import (
 	"appengine"
 	"appengine/datastore"
+	"crypto/md5"
 	goerrors "errors"
+	"fmt"
 	"github.com/knightso/base/errors"
 	"github.com/qedus/nds"
+	"io"
 	"reflect"
 	"time"
 )
@@ -307,3 +310,11 @@ func RemoveKeyFromIndex(c appengine.Context, key *datastore.Key, id string) erro
 	}
 	return nil
 }
+
+// to avoid tab split
+func AddHashPrefix(s string) string {
+	h := md5.New()
+	io.WriteString(h, s)
+	return fmt.Sprintf("%x-%s", h.Sum(nil)[:3], s)
+}
+
