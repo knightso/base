@@ -64,7 +64,9 @@ func NewMartini(option MartiniOption) *ExMartini {
 	})
 	m.Use(martini.Logger())
 	m.Use(martini.Recovery())
-	m.Use(render.Renderer())
+	m.Use(render.Renderer(render.Options{
+		IndentJSON: true,
+	}))
 	for _, h := range option.AdditionalHandlers {
 		m.Use(h)
 	}
