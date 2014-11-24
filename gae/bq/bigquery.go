@@ -12,6 +12,10 @@ import (
 
 var EnableLog bool = false // debugging variable.
 
+const (
+	QUEUE_NAME string = "log2bigquery"
+)
+
 type Task struct {
 	LogID    string
 	InsertID string
@@ -41,7 +45,7 @@ func SendLog(c appengine.Context, logID, insertID string, record interface{}) er
 		Method:  "PULL",
 		Tag:     logID,
 	}
-	_, err = taskqueue.Add(c, &task, "log2bigquery")
+	_, err = taskqueue.Add(c, &task, QUEUE_NAME)
 	if err != nil {
 		return errors.WrapOr(err)
 	}
