@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-// TODO: now using encoded string as map key. Is it ok??
 type SyncMap struct {
 	sync.RWMutex
 	M map[string]interface{}

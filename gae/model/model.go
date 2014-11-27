@@ -121,6 +121,8 @@ func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst in
 	return nil
 }
 
+// keys only query is not supported(use datastore package)
+// TODO:check keysonly
 func ExecuteQuery(c appengine.Context, q *datastore.Query, dst interface{}) error {
 
 	keys, err := q.GetAll(c, dst)
@@ -317,4 +319,10 @@ func AddHashPrefix(s string) string {
 	io.WriteString(h, s)
 	return fmt.Sprintf("%x-%s", h.Sum(nil)[:3], s)
 }
+
+/* under construction
+func FilterStartsWith(q *datastore.Query, filterStr string, value string) *datastore.Query {
+	return q.Filter(filterStr + " >=", value).Filter(filterStr + " <", value + "\ufffd")
+}
+*/
 
