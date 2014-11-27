@@ -40,8 +40,9 @@ func NewMartini(option MartiniOption) *ExMartini {
 		ac := appengine.NewContext(r)
 		c.Next()
 		for l := popLog(); l != ""; l = popLog() {
+			ac.Debugf(l)
+			
 			if option.Log2bq == false {
-				ac.Debugf(l)
 				continue
 			}
 
@@ -58,8 +59,6 @@ func NewMartini(option MartiniOption) *ExMartini {
 				ac.Warningf("%s", err.Error())
 				continue
 			}
-
-			ac.Debugf(l)
 		}
 	})
 	m.Use(martini.Logger())
