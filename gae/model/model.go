@@ -19,54 +19,6 @@ var UniqueConstraintError = goerrors.New("Already exists.")
 var DefaultCache = false
 var CacheKinds = make(map[string]bool)
 
-func needCache(string kind) bool {
-	if needCache(kind) {
-		return needCache
-	} else {
-		return DefaultCache
-	}
-}
-
-func getGetFunc(string kind) func(appengine.Context, *datastore.Key, interface{}) error {
-	if needCache(kind) {
-		return nds.Get
-	} else {
-		return datastore.Get
-	}
-}
-
-func getGetMultiFunc(string kind) func(appengine.Context, []*datastore.Key, interface{}) error {
-	if needCache(kind) {
-		return nds.GetMulti
-	} else {
-		return datastore.GetMulti
-	}
-}
-
-func getPutFunc(string kind) func(appengine.Context, *datastore.Key, interface{}) (*datastore.Key, error) {
-	if needCache(kind) {
-		return nds.Put
-	} else {
-		return datastore.Put
-	}
-}
-
-func getPutMultiFunc(string kind) func(appengine.Context, []*datastore.Key, interface{}) ([]*datastore.Key, error) {
-	if needCache(kind) {
-		return nds.PutMulti
-	} else {
-		return datastore.PutMulti
-	}
-}
-
-func getDeleteFunc(string kind) func(appengine.Context, *datastore.Key) error {
-	if needCache(kind) {
-		return nds.Delete
-	} else {
-		return datastore.Delete
-	}
-}
-
 type HasKey interface {
 	GetKey() *datastore.Key
 	SetKey(*datastore.Key)
@@ -130,7 +82,8 @@ func Put(c appengine.Context, e HasKey) error {
 		hv.IncrementVersion()
 	}
 
-	key, err := nds.Put(c, e.GetKey(), e)
+	f := getPutFunc(e.GetKey().Kind())
+	key, err := f(c, e.GetKey(), e)
 	if err != nil {
 		return errors.WrapOr(err)
 	}
@@ -142,7 +95,9 @@ func Put(c appengine.Context, e HasKey) error {
 
 func Get(c appengine.Context, key *datastore.Key, dst interface{}) error {
 
-	if err := nds.Get(c, key, dst); err != nil {
+	f := getGetFunc(key.Kind())
+
+	if err := f(c, key, dst); err != nil {
 		return errors.WrapOr(err)
 	}
 
@@ -155,7 +110,9 @@ func Get(c appengine.Context, key *datastore.Key, dst interface{}) error {
 
 func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst interface{}) error {
 
-	if err := nds.Get(c, key, dst); err != nil {
+	f := getGetFunc(key.Kind())
+
+	if err := f(c, key, dst); err != nil {
 		return errors.WrapOr(err)
 	}
 
@@ -191,7 +148,12 @@ func ExecuteQuery(c appengine.Context, q *datastore.Query, dst interface{}) erro
 
 func GetMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error {
 
-	err := nds.GetMulti(c, keys, dst)
+	f := datastore.GetMulti
+	if len(keys) > 0 {
+		f = getGetMultiFunc(keys[0].Kind())
+	}
+
+	err := f(c, keys, dst)
 	if err != nil {
 		if _, ok := err.(appengine.MultiError); !ok {
 			return errors.WrapOr(err)
@@ -214,7 +176,12 @@ func GetMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 
 func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []int, dst interface{}) error {
 
-	err := nds.GetMulti(c, keys, dst)
+	f := datastore.GetMulti
+	if len(keys) > 0 {
+		f = getGetMultiFunc(keys[0].Kind())
+	}
+
+	err := f(c, keys, dst)
 	if err != nil {
 		if _, ok := err.(appengine.MultiError); !ok {
 			return errors.WrapOr(err)
@@ -243,6 +210,11 @@ func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []
 // TODO: consider interface (how do you treat key?)
 func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error {
 
+	f := datastore.PutMulti
+	if len(keys) > 0 {
+		f = getPutMultiFunc(keys[0].Kind())
+	}
+
 	forEach(dst, func(index int, elem interface{}) error {
 		if ht, ok := elem.(HasTime); ok {
 			ht.SetMetaTime()
@@ -253,7 +225,7 @@ func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 		return nil
 	})
 
-	keysput, err := nds.PutMulti(c, keys, dst)
+	keysput, err := f(c, keys, dst)
 	if err != nil {
 		if _, ok := err.(appengine.MultiError); !ok {
 			return errors.WrapOr(err)
@@ -305,10 +277,13 @@ type GenericIndex struct {
 const INDEX_PREFIX = "Index"
 
 func FindIndexedKey(c appengine.Context, kind, id string) (*datastore.Key, error) {
+	
+	f := getGetFunc(kind)
+
 	idxKey := datastore.NewKey(c, kind+INDEX_PREFIX, id, 0, nil)
 
 	var index GenericIndex
-	if err := nds.Get(c, idxKey, &index); err != nil {
+	if err := f(c, idxKey, &index); err != nil {
 		return nil, err
 	}
 
@@ -317,6 +292,11 @@ func FindIndexedKey(c appengine.Context, kind, id string) (*datastore.Key, error
 
 // call in Tx
 func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) error {
+	kind := key.Kind()
+	getF := getGetFunc(kind)
+	putF := getPutFunc(kind)
+	deleteF := getDeleteFunc(kind)
+
 	if id == oldId {
 		// do nothing
 		return nil
@@ -325,7 +305,7 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 	idxKey := datastore.NewKey(c, key.Kind()+INDEX_PREFIX, id, 0, nil)
 
 	var index GenericIndex
-	err := nds.Get(c, idxKey, &index)
+	err := getF(c, idxKey, &index)
 	if err == nil {
 		return errors.WrapOr(UniqueConstraintError)
 	} else if err != datastore.ErrNoSuchEntity {
@@ -333,18 +313,18 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 	}
 
 	idx := GenericIndex{Key: key}
-	if _, err := nds.Put(c, idxKey, &idx); err != nil {
+	if _, err := putF(c, idxKey, &idx); err != nil {
 		return errors.WrapOr(err)
 	}
 
 	if oldId != "" {
 		oldIdxKey := datastore.NewKey(c, key.Kind()+INDEX_PREFIX, oldId, 0, nil)
 		var oldIndex GenericIndex
-		if err := nds.Get(c, oldIdxKey, &oldIndex); err != nil {
+		if err := getF(c, oldIdxKey, &oldIndex); err != nil {
 			return errors.WrapOr(err)
 		} else {
 			//remove old index.
-			if err := nds.Delete(c, oldIdxKey); err != nil {
+			if err := deleteF(c, oldIdxKey); err != nil {
 				return errors.WrapOr(err)
 			}
 		}
@@ -357,8 +337,10 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 }
 
 func RemoveKeyFromIndex(c appengine.Context, key *datastore.Key, id string) error {
+	deleteF := getDeleteFunc(key.Kind())
+
 	idxKey := datastore.NewKey(c, key.Kind()+INDEX_PREFIX, id, 0, nil)
-	if err := nds.Delete(c, idxKey); err != nil {
+	if err := deleteF(c, idxKey); err != nil {
 		return errors.WrapOr(err)
 	}
 	return nil
@@ -369,6 +351,55 @@ func AddHashPrefix(s string) string {
 	h := md5.New()
 	io.WriteString(h, s)
 	return fmt.Sprintf("%x-%s", h.Sum(nil)[:3], s)
+}
+
+func needCache(kind string) bool {
+	nc, ok := CacheKinds[kind]
+	if ok {
+		return nc
+	} else {
+		return DefaultCache
+	}
+}
+
+func getGetFunc(kind string) func(appengine.Context, *datastore.Key, interface{}) error {
+	if needCache(kind) {
+		return nds.Get
+	} else {
+		return datastore.Get
+	}
+}
+
+func getGetMultiFunc(kind string) func(appengine.Context, []*datastore.Key, interface{}) error {
+	if needCache(kind) {
+		return nds.GetMulti
+	} else {
+		return datastore.GetMulti
+	}
+}
+
+func getPutFunc(kind string) func(appengine.Context, *datastore.Key, interface{}) (*datastore.Key, error) {
+	if needCache(kind) {
+		return nds.Put
+	} else {
+		return datastore.Put
+	}
+}
+
+func getPutMultiFunc(kind string) func(appengine.Context, []*datastore.Key, interface{}) ([]*datastore.Key, error) {
+	if needCache(kind) {
+		return nds.PutMulti
+	} else {
+		return datastore.PutMulti
+	}
+}
+
+func getDeleteFunc(kind string) func(appengine.Context, *datastore.Key) error {
+	if needCache(kind) {
+		return nds.Delete
+	} else {
+		return datastore.Delete
+	}
 }
 
 /* under construction
