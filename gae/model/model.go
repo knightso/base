@@ -16,6 +16,57 @@ import (
 var OptimisticLockError = goerrors.New("Optimistic lock failure.")
 var UniqueConstraintError = goerrors.New("Already exists.")
 
+var DefaultCache = false
+var CacheKinds = make(map[string]bool)
+
+func needCache(string kind) bool {
+	if needCache(kind) {
+		return needCache
+	} else {
+		return DefaultCache
+	}
+}
+
+func getGetFunc(string kind) func(appengine.Context, *datastore.Key, interface{}) error {
+	if needCache(kind) {
+		return nds.Get
+	} else {
+		return datastore.Get
+	}
+}
+
+func getGetMultiFunc(string kind) func(appengine.Context, []*datastore.Key, interface{}) error {
+	if needCache(kind) {
+		return nds.GetMulti
+	} else {
+		return datastore.GetMulti
+	}
+}
+
+func getPutFunc(string kind) func(appengine.Context, *datastore.Key, interface{}) (*datastore.Key, error) {
+	if needCache(kind) {
+		return nds.Put
+	} else {
+		return datastore.Put
+	}
+}
+
+func getPutMultiFunc(string kind) func(appengine.Context, []*datastore.Key, interface{}) ([]*datastore.Key, error) {
+	if needCache(kind) {
+		return nds.PutMulti
+	} else {
+		return datastore.PutMulti
+	}
+}
+
+func getDeleteFunc(string kind) func(appengine.Context, *datastore.Key) error {
+	if needCache(kind) {
+		return nds.Delete
+	} else {
+		return datastore.Delete
+	}
+}
+
 type HasKey interface {
 	GetKey() *datastore.Key
 	SetKey(*datastore.Key)
