@@ -1,11 +1,14 @@
 package bq
 
 import (
+	"bytes"
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"appengine"
 	"appengine/taskqueue"
+	"appengine/datastore"
 
 	"github.com/knightso/base/errors"
 )
@@ -51,4 +54,32 @@ func SendLog(c appengine.Context, logID, insertID string, record interface{}) er
 	}
 
 	return nil
+}
+
+func DatastoreKeyToPath(key *datastore.Key) string {
+	if key == nil {
+		return ""
+	}
+	var buf bytes.Buffer
+	key2buf(key, &buf)
+	return buf.String()
+}
+
+func key2buf(key *datastore.Key, buf *bytes.Buffer) {
+	if key.Parent() != nil {
+		key2buf(key.Parent(), buf)
+	}
+	if buf.Len() > 0 {
+		buf.WriteString(", ")
+	}
+	buf.WriteString("\"")
+	buf.WriteString(key.Kind())
+	buf.WriteString("\", ")
+	if key.IntID() != 0 {
+		buf.WriteString(strconv.FormatInt(key.IntID(), 10))
+	} else {
+		buf.WriteString("\"")
+		buf.WriteString(key.StringID())
+		buf.WriteString("\"")
+	}
 }
