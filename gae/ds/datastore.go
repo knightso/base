@@ -246,6 +246,11 @@ func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 	return nil
 }
 
+func Delete(c appengine.Context, key *datastore.Key) error {
+	f := getDeleteFunc(key.Kind())
+	return f(c, key)
+}
+
 func forEach(list interface{}, f func(index int, elem interface{}) error) error {
 
 	v := reflect.ValueOf(list)
@@ -400,6 +405,33 @@ func getDeleteFunc(kind string) func(appengine.Context, *datastore.Key) error {
 	} else {
 		return datastore.Delete
 	}
+}
+
+type Sequence struct {
+	LastID int64
+}
+
+func GenerateID(c appengine.Context, kind string) (int64, error) {
+	key := datastore.NewKey(c, "Sequence", kind, 0, nil)
+	var sequence Sequence
+	var err error
+	err = datastore.RunInTransaction(c, func(c appengine.Context) error {
+		err = datastore.Get(c, key, &sequence)
+		if err != nil && err != datastore.ErrNoSuchEntity {
+			return err
+		}
+		sequence.LastID++
+		_, err = datastore.Put(c, key, &sequence)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	return sequence.LastID, nil
 }
 
 /* under construction
