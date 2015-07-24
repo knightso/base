@@ -1,16 +1,18 @@
 package ds
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"crypto/md5"
 	goerrors "errors"
 	"fmt"
-	"github.com/knightso/base/errors"
-	"github.com/qedus/nds"
 	"io"
 	"reflect"
 	"time"
+
+	"github.com/knightso/base/errors"
+	"github.com/qedus/nds"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 )
 
 var OptimisticLockError = goerrors.New("Optimistic lock failure.")
@@ -74,7 +76,7 @@ func (m *Meta) IncrementVersion() {
 	m.Version++
 }
 
-func Put(c appengine.Context, e HasKey) error {
+func Put(c context.Context, e HasKey) error {
 	if ht, ok := e.(HasTime); ok {
 		ht.SetMetaTime()
 	}
@@ -93,7 +95,7 @@ func Put(c appengine.Context, e HasKey) error {
 	return nil
 }
 
-func Get(c appengine.Context, key *datastore.Key, dst interface{}) error {
+func Get(c context.Context, key *datastore.Key, dst interface{}) error {
 
 	f := getGetFunc(key.Kind())
 
@@ -108,7 +110,7 @@ func Get(c appengine.Context, key *datastore.Key, dst interface{}) error {
 	return nil
 }
 
-func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst interface{}) error {
+func GetWithVersion(c context.Context, key *datastore.Key, version int, dst interface{}) error {
 
 	f := getGetFunc(key.Kind())
 
@@ -131,7 +133,7 @@ func GetWithVersion(c appengine.Context, key *datastore.Key, version int, dst in
 
 // keys only query is not supported(use datastore package)
 // TODO:check keysonly
-func ExecuteQuery(c appengine.Context, q *datastore.Query, dst interface{}) error {
+func ExecuteQuery(c context.Context, q *datastore.Query, dst interface{}) error {
 
 	keys, err := q.GetAll(c, dst)
 	if err != nil {
@@ -146,7 +148,7 @@ func ExecuteQuery(c appengine.Context, q *datastore.Query, dst interface{}) erro
 	})
 }
 
-func GetMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error {
+func GetMulti(c context.Context, keys []*datastore.Key, dst interface{}) error {
 
 	f := datastore.GetMulti
 	if len(keys) > 0 {
@@ -174,7 +176,7 @@ func GetMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 	return nil
 }
 
-func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []int, dst interface{}) error {
+func GetMultiWithVersion(c context.Context, keys []*datastore.Key, versions []int, dst interface{}) error {
 
 	f := datastore.GetMulti
 	if len(keys) > 0 {
@@ -208,7 +210,7 @@ func GetMultiWithVersion(c appengine.Context, keys []*datastore.Key, versions []
 }
 
 // TODO: consider interface (how do you treat key?)
-func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error {
+func PutMulti(c context.Context, keys []*datastore.Key, dst interface{}) error {
 
 	f := datastore.PutMulti
 	if len(keys) > 0 {
@@ -246,7 +248,7 @@ func PutMulti(c appengine.Context, keys []*datastore.Key, dst interface{}) error
 	return nil
 }
 
-func Delete(c appengine.Context, key *datastore.Key) error {
+func Delete(c context.Context, key *datastore.Key) error {
 	f := getDeleteFunc(key.Kind())
 	return f(c, key)
 }
@@ -281,8 +283,8 @@ type GenericIndex struct {
 
 const INDEX_PREFIX = "Index"
 
-func FindIndexedKey(c appengine.Context, kind, id string) (*datastore.Key, error) {
-	
+func FindIndexedKey(c context.Context, kind, id string) (*datastore.Key, error) {
+
 	f := getGetFunc(kind)
 
 	idxKey := datastore.NewKey(c, kind+INDEX_PREFIX, id, 0, nil)
@@ -296,7 +298,7 @@ func FindIndexedKey(c appengine.Context, kind, id string) (*datastore.Key, error
 }
 
 // call in Tx
-func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) error {
+func PutKeyToIndex(c context.Context, key *datastore.Key, id, oldId string) error {
 	kind := key.Kind()
 	getF := getGetFunc(kind)
 	putF := getPutFunc(kind)
@@ -341,7 +343,7 @@ func PutKeyToIndex(c appengine.Context, key *datastore.Key, id, oldId string) er
 	return nil
 }
 
-func RemoveKeyFromIndex(c appengine.Context, key *datastore.Key, id string) error {
+func RemoveKeyFromIndex(c context.Context, key *datastore.Key, id string) error {
 	deleteF := getDeleteFunc(key.Kind())
 
 	idxKey := datastore.NewKey(c, key.Kind()+INDEX_PREFIX, id, 0, nil)
@@ -367,7 +369,7 @@ func needCache(kind string) bool {
 	}
 }
 
-func getGetFunc(kind string) func(appengine.Context, *datastore.Key, interface{}) error {
+func getGetFunc(kind string) func(context.Context, *datastore.Key, interface{}) error {
 	if needCache(kind) {
 		return nds.Get
 	} else {
@@ -375,7 +377,7 @@ func getGetFunc(kind string) func(appengine.Context, *datastore.Key, interface{}
 	}
 }
 
-func getGetMultiFunc(kind string) func(appengine.Context, []*datastore.Key, interface{}) error {
+func getGetMultiFunc(kind string) func(context.Context, []*datastore.Key, interface{}) error {
 	if needCache(kind) {
 		return nds.GetMulti
 	} else {
@@ -383,7 +385,7 @@ func getGetMultiFunc(kind string) func(appengine.Context, []*datastore.Key, inte
 	}
 }
 
-func getPutFunc(kind string) func(appengine.Context, *datastore.Key, interface{}) (*datastore.Key, error) {
+func getPutFunc(kind string) func(context.Context, *datastore.Key, interface{}) (*datastore.Key, error) {
 	if needCache(kind) {
 		return nds.Put
 	} else {
@@ -391,7 +393,7 @@ func getPutFunc(kind string) func(appengine.Context, *datastore.Key, interface{}
 	}
 }
 
-func getPutMultiFunc(kind string) func(appengine.Context, []*datastore.Key, interface{}) ([]*datastore.Key, error) {
+func getPutMultiFunc(kind string) func(context.Context, []*datastore.Key, interface{}) ([]*datastore.Key, error) {
 	if needCache(kind) {
 		return nds.PutMulti
 	} else {
@@ -399,7 +401,7 @@ func getPutMultiFunc(kind string) func(appengine.Context, []*datastore.Key, inte
 	}
 }
 
-func getDeleteFunc(kind string) func(appengine.Context, *datastore.Key) error {
+func getDeleteFunc(kind string) func(context.Context, *datastore.Key) error {
 	if needCache(kind) {
 		return nds.Delete
 	} else {
@@ -411,11 +413,11 @@ type Sequence struct {
 	LastID int64
 }
 
-func GenerateID(c appengine.Context, kind string) (int64, error) {
+func GenerateID(c context.Context, kind string) (int64, error) {
 	key := datastore.NewKey(c, "Sequence", kind, 0, nil)
 	var sequence Sequence
 	var err error
-	err = datastore.RunInTransaction(c, func(c appengine.Context) error {
+	err = datastore.RunInTransaction(c, func(c context.Context) error {
 		err = datastore.Get(c, key, &sequence)
 		if err != nil && err != datastore.ErrNoSuchEntity {
 			return err
@@ -439,4 +441,3 @@ func FilterStartsWith(q *datastore.Query, filterStr string, value string) *datas
 	return q.Filter(filterStr + " >=", value).Filter(filterStr + " <", value + "\ufffd")
 }
 */
-

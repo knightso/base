@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"appengine"
-	"appengine/taskqueue"
-	"appengine/datastore"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/taskqueue"
 
 	"github.com/knightso/base/errors"
 )
