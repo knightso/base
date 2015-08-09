@@ -1,8 +1,9 @@
 package ds
 
 import (
-	"appengine/datastore"
 	"sync"
+
+	"google.golang.org/appengine/datastore"
 )
 
 type SyncMap struct {

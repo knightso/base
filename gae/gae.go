@@ -9,12 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"appengine"
-
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/go-martini/martini"
 	"github.com/knightso/base/gae/bq"
 	"github.com/martini-contrib/render"
+	"google.golang.org/appengine"
 )
 
 type ExMartini struct {
@@ -41,7 +40,7 @@ func NewMartini(option MartiniOption) *ExMartini {
 		c.Next()
 		for l := popLog(); l != ""; l = popLog() {
 			ac.Debugf(l)
-			
+
 			if option.Log2bq == false {
 				continue
 			}

@@ -1,9 +1,10 @@
 package ds
 
 import (
-	"appengine/aetest"
-	"appengine/datastore"
 	"testing"
+
+	"google.golang.org/appengine/aetest"
+	"google.golang.org/appengine/datastore"
 )
 
 func Test(t *testing.T) {
