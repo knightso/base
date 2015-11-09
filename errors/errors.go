@@ -48,13 +48,16 @@ func (e *BaseError) Cause() error {
 }
 
 func (e *BaseError) Error() string {
-	if e.message != "" {
-		return e.message
-	} else if e.cause != nil {
-		return e.cause.Error()
-	} else {
-		return "no error message"
-	}
+	return e.ErrorWithStackTrace()
+	/*
+		if e.message != "" {
+			return e.message
+		} else if e.cause != nil {
+			return e.cause.Error()
+		} else {
+			return "no error message"
+		}
+	*/
 }
 
 func (e *BaseError) ErrorWithStackTrace() string {

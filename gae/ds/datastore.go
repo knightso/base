@@ -54,7 +54,7 @@ func (m *Meta) SetKey(key *datastore.Key) {
 }
 
 func (m *Meta) SetMetaTime() {
-	if m.CreatedAt == (time.Time{}) {
+	if m.CreatedAt.IsZero() {
 		m.CreatedAt = time.Now()
 	}
 	m.UpdatedAt = time.Now()
