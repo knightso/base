@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"code.google.com/p/go-uuid/uuid"
 	"github.com/go-martini/martini"
 	"github.com/knightso/base/gae/bq"
 	"github.com/martini-contrib/render"
+	"github.com/pborman/uuid"
 	"google.golang.org/appengine"
 )
 
