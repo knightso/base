@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"io"
 	"runtime"
+	"sync"
 	"unicode/utf8"
 )
-
-var ShowStackTraceOnError bool
 
 type Error interface {
 	Message() string
@@ -50,17 +49,16 @@ func (e *BaseError) Cause() error {
 }
 
 func (e *BaseError) Error() string {
-	var msg string
-	if e.message != "" {
-		msg = e.message
-	} else if e.cause != nil {
-		msg = e.cause.Error()
-	}
-	if ShowStackTraceOnError {
-		return fmt.Sprintf("message: %s\nstacktrace:\n%s", msg, e.ErrorWithStackTrace())
-	} else {
-		return msg
-	}
+	return e.ErrorWithStackTrace()
+	/*
+		if e.message != "" {
+			return e.message
+		} else if e.cause != nil {
+			return e.cause.Error()
+		} else {
+			return "no error message"
+		}
+	*/
 }
 
 func (e *BaseError) ErrorWithStackTrace() string {
@@ -178,4 +176,18 @@ func StackTrace(skip, maxBytes int) string {
 	w.WriteString("\n")
 
 	return w.String()
+}
+
+// SyncMultiError describes synchronized MultiError.
+// Note: wrapped MultiError is not synchronized if you write directly.
+type SyncMultiError struct {
+	MultiError
+	sync.Mutex
+}
+
+// Append append an error.
+func (sm *SyncMultiError) Append(err error) {
+	sm.Lock()
+	defer sm.Unlock()
+	sm.MultiError = append(sm.MultiError, err)
 }
