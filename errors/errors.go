@@ -9,6 +9,8 @@ import (
 	"unicode/utf8"
 )
 
+var ShowStackTraceOnError bool
+
 type Error interface {
 	Message() string
 	StackTrace() string
@@ -25,6 +27,10 @@ type BaseError struct {
 
 func New(msg string) *BaseError {
 	return _new(nil, msg, 3)
+}
+
+func Errorf(format string, args ...interface{}) *BaseError {
+	return _new(nil, fmt.Sprintf(format, args...), 3)
 }
 
 func _new(cause error, msg string, skipStack int) *BaseError {
@@ -49,16 +55,17 @@ func (e *BaseError) Cause() error {
 }
 
 func (e *BaseError) Error() string {
-	return e.ErrorWithStackTrace()
-	/*
-		if e.message != "" {
-			return e.message
-		} else if e.cause != nil {
-			return e.cause.Error()
-		} else {
-			return "no error message"
-		}
-	*/
+	var msg string
+	if e.message != "" {
+		msg = e.message
+	} else if e.cause != nil {
+		msg = e.cause.Error()
+	}
+	if ShowStackTraceOnError {
+		return fmt.Sprintf("message: %s\nstacktrace:\n%s", msg, e.ErrorWithStackTrace())
+	} else {
+		return msg
+	}
 }
 
 func (e *BaseError) ErrorWithStackTrace() string {

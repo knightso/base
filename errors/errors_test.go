@@ -5,6 +5,15 @@ import (
 	"testing"
 )
 
+func TestErrorf(t *testing.T) {
+	err := Errorf("test %d %s", 123, "hoge")
+
+	expected := "test 123 hoge"
+	if err.Error() != expected {
+		t.Fatalf("expected: %s, but was: %s", expected, err.Error())
+	}
+}
+
 func TestSyncMultiError(t *testing.T) {
 	var sme SyncMultiError
 	sme.Append(errors.New("aaa"))
