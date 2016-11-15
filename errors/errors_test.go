@@ -15,4 +15,9 @@ func TestSyncMultiError(t *testing.T) {
 	if sme.Error() != expected {
 		t.Fatalf("sme.Error() expected:%s, but was:%s", expected, sme.Error())
 	}
+
+	expectedLen := 3
+	if sme.Len() != expectedLen {
+		t.Fatalf("sme.Len() expected:%d, but was:%d", expectedLen, sme.Len())
+	}
 }

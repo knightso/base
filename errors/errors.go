@@ -191,3 +191,8 @@ func (sm *SyncMultiError) Append(err error) {
 	defer sm.Unlock()
 	sm.MultiError = append(sm.MultiError, err)
 }
+
+// Len returns length of errors.
+func (sm *SyncMultiError) Len() int {
+	return len(sm.MultiError)
+}
