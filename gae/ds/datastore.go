@@ -436,6 +436,13 @@ func GenerateID(c context.Context, kind string) (int64, error) {
 	return sequence.LastID, nil
 }
 
+// RunInTransaction wraps nds's RunInTransaction
+func RunInTransaction(c context.Context, f func(tc context.Context) error,
+	opts *datastore.TransactionOptions) error {
+
+	return nds.RunInTransaction(c, f, opts)
+}
+
 /* under construction
 func FilterStartsWith(q *datastore.Query, filterStr string, value string) *datastore.Query {
 	return q.Filter(filterStr + " >=", value).Filter(filterStr + " <", value + "\ufffd")
