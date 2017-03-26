@@ -24,3 +24,14 @@ func ToBigrams(value string) map[Bigram]bool {
 	}
 	return result
 }
+
+func ToUnigrams(value string) map[rune]bool {
+	result := make(map[rune]bool)
+	for _, r := range strings.ToLower(value) {
+		if r == ' ' {
+			continue
+		}
+		result[r] = true
+	}
+	return result
+}

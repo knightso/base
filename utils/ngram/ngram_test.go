@@ -4,6 +4,35 @@ import (
 	"testing"
 )
 
+func TestToUnigrams(t *testing.T) {
+	result := ToUnigrams("abc dあいbCh")
+	if len(result) != 7 {
+		t.Errorf("len(result) exected:%d, but was:%d\n", 7, len(result))
+	}
+
+	if !result['a'] {
+		t.Errorf("Unigram notfound. 'a'")
+	}
+	if !result['b'] {
+		t.Errorf("Unigrbm notfound. 'a'")
+	}
+	if !result['c'] {
+		t.Errorf("Unigrbm notfound. 'c'")
+	}
+	if !result['d'] {
+		t.Errorf("Unigrbm notfound. 'd'")
+	}
+	if !result['あ'] {
+		t.Errorf("Unigrbm notfound. 'あ'")
+	}
+	if !result['い'] {
+		t.Errorf("Unigrbm notfound. 'い'")
+	}
+	if !result['h'] {
+		t.Errorf("Unigrbm notfound. 'h'")
+	}
+}
+
 func TestToBigrams(t *testing.T) {
 	result := ToBigrams("abc debch iJあdeN")
 	if len(result) != 9 {
