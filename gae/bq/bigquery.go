@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"google.golang.org/appengine"
+	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/taskqueue"
 
@@ -26,7 +26,7 @@ type Task struct {
 	Record   interface{}
 }
 
-func SendLog(c appengine.Context, logID, insertID string, record interface{}) error {
+func SendLog(c context.Context, logID, insertID string, record interface{}) error {
 	if EnableLog == false {
 		return nil
 	}

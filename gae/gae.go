@@ -13,7 +13,9 @@ import (
 	"github.com/knightso/base/gae/bq"
 	"github.com/martini-contrib/render"
 	"github.com/pborman/uuid"
+	"golang.org/x/net/context"
 	"google.golang.org/appengine"
+	aelog "google.golang.org/appengine/log"
 )
 
 type ExMartini struct {
@@ -39,7 +41,7 @@ func NewMartini(option MartiniOption) *ExMartini {
 		ac := appengine.NewContext(r)
 		c.Next()
 		for l := popLog(); l != ""; l = popLog() {
-			ac.Debugf(l)
+			aelog.Debugf(ac, l)
 
 			if option.Log2bq == false {
 				continue
@@ -55,7 +57,7 @@ func NewMartini(option MartiniOption) *ExMartini {
 
 			err := bq.SendLog(ac, "debuglog", uuidString, record)
 			if err != nil {
-				ac.Warningf("%s", err.Error())
+				aelog.Warningf(ac, "%s", err.Error())
 				continue
 			}
 		}
@@ -75,11 +77,11 @@ func NewMartini(option MartiniOption) *ExMartini {
 }
 
 type logWriter struct {
-	ac appengine.Context
+	ac context.Context
 }
 
 func (w logWriter) Write(p []byte) (n int, err error) {
-	w.ac.Debugf(string(p))
+	aelog.Debugf(w.ac, string(p))
 	return len(p), nil
 }
 
