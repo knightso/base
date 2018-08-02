@@ -1,6 +1,7 @@
 package ds
 
 import (
+	"context"
 	"crypto/md5"
 	goerrors "errors"
 	"fmt"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/knightso/base/errors"
 	"github.com/qedus/nds"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 )
