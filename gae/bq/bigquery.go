@@ -2,11 +2,11 @@ package bq
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 	"time"
 
-	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/taskqueue"
 

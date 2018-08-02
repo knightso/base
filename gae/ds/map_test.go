@@ -8,11 +8,11 @@ import (
 )
 
 func Test(t *testing.T) {
-	c, err := aetest.NewContext(nil)
+	c, done, err := aetest.NewContext()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.Close()
+	defer done()
 
 	m := NewSyncMap()
 

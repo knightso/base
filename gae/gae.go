@@ -1,6 +1,7 @@
 package gae
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"github.com/knightso/base/gae/bq"
 	"github.com/martini-contrib/render"
 	"github.com/pborman/uuid"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	aelog "google.golang.org/appengine/log"
 )
