@@ -82,14 +82,23 @@ func (e *BaseError) ErrorWithStackTrace() string {
 }
 
 func Wrap(e error, msg string) *BaseError {
+	if e == nil {
+		return nil
+	}
 	return _new(e, msg, 3)
 }
 
 func Wrapf(e error, msg string, args ...interface{}) *BaseError {
+	if e == nil {
+		return nil
+	}
 	return _new(e, fmt.Sprintf(msg, args...), 3)
 }
 
 func WrapOr(e error) *BaseError {
+	if e == nil {
+		return nil
+	}
 	if ee, ok := e.(*BaseError); ok {
 		return ee
 	}
