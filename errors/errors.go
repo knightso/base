@@ -9,7 +9,10 @@ import (
 	"unicode/utf8"
 )
 
-var ShowStackTraceOnError bool
+var (
+	ShowStackTraceOnError bool
+	MaxStackTraceSize     = 2048
+)
 
 type Error interface {
 	Message() string
@@ -38,7 +41,7 @@ func _new(cause error, msg string, skipStack int) *BaseError {
 		message: msg,
 		cause:   cause,
 	}
-	err.stackTrace = StackTrace(skipStack, 2048)
+	err.stackTrace = StackTrace(skipStack, MaxStackTraceSize)
 	return &err
 }
 
