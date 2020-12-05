@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/go-martini/martini"
+	"github.com/google/uuid"
 	"github.com/knightso/base/gae/bq"
 	"github.com/martini-contrib/render"
-	"github.com/pborman/uuid"
 	"google.golang.org/appengine"
 	aelog "google.golang.org/appengine/log"
 )
@@ -47,7 +47,12 @@ func NewMartini(option MartiniOption) *ExMartini {
 				continue
 			}
 
-			id := uuid.NewUUID()
+			id, err := uuid.NewRandom()
+			if err != nil {
+				aelog.Warningf(ac, "%s", err.Error())
+				continue
+			}
+
 			uuidString := id.String()
 			now := time.Now()
 			record := make(map[string]interface{})
@@ -55,7 +60,7 @@ func NewMartini(option MartiniOption) *ExMartini {
 			record["date"] = now
 			record["log"] = l
 
-			err := bq.SendLog(ac, "debuglog", uuidString, record)
+			err = bq.SendLog(ac, "debuglog", uuidString, record)
 			if err != nil {
 				aelog.Warningf(ac, "%s", err.Error())
 				continue
