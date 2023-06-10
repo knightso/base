@@ -11,6 +11,7 @@ type RuleRootUsedForCompare struct {
 	typesInfo *types.Info
 }
 
+// check if the node is "if {X} {op} {Y}" and the type of {X} and {Y} is error
 func (r *RuleRootUsedForCompare) IsTarget(node ast.Node) bool {
 	if ifStmt, ok := node.(*ast.IfStmt); ok {
 		if binaryExpr, ok := ifStmt.Cond.(*ast.BinaryExpr); ok {
@@ -20,6 +21,7 @@ func (r *RuleRootUsedForCompare) IsTarget(node ast.Node) bool {
 	return false
 }
 
+// check if the binaryExpr is not "if {X} {op} nil" and {X} is "errors.Root({val})"-ed
 func (r *RuleRootUsedForCompare) Check(node ast.Node) bool {
 	binaryExpr := node.(*ast.IfStmt).Cond.(*ast.BinaryExpr)
 
