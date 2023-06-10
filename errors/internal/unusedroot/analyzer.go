@@ -1,4 +1,4 @@
-package internal
+package unusedroot
 
 import (
 	"go/ast"
