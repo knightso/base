@@ -15,4 +15,8 @@ func main() {
 	if multiError, ok := errors.Root(err).(appengine.MultiError); ok { // OK
 		log.Fatal(multiError)
 	}
+	root := errors.Root(err)
+	if multiError, ok := root.(appengine.MultiError); ok { // OK
+		log.Fatal(multiError)
+	}
 }
