@@ -41,11 +41,10 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
-// call check() before call isTarget and only if its result is true
 type Rule interface {
-	IsTarget(ast.Node) bool
-	Check(ast.Node) bool
-	Diagnostic(ast.Node) analysis.Diagnostic
+	IsTarget(ast.Node) bool                  // check if the node is target(call this method at first)
+	Check(ast.Node) bool                     // check if the node fullfills the rule
+	Diagnostic(ast.Node) analysis.Diagnostic // return the diagnostic of the rule
 }
 
 func isErrorType(typesInfo *types.Info, expr ast.Expr) bool {
